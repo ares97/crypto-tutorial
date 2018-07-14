@@ -1,19 +1,23 @@
 package com.slowinski.radoslaw.cryptomarket
 
+import com.slowinski.radoslaw.cryptomarket.exceptions.CantFetchBtcPrice
 import com.slowinski.radoslaw.cryptomarket.exceptions.NotEnoughMoneyException
 import com.slowinski.radoslaw.cryptomarket.exceptions.UserNotFoundException
+import com.slowinski.radoslaw.cryptomarket.model.BtcPrice
 import com.slowinski.radoslaw.cryptomarket.model.User
 import com.slowinski.radoslaw.cryptomarket.model.Wallet
 import com.slowinski.radoslaw.cryptomarket.repository.UserRepository
 import com.slowinski.radoslaw.cryptomarket.repository.WalletRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 
 interface CryptoFacade {
     fun getUsers(): List<User>
     fun addUser(firstName: String, lastName: String): User
     fun getUser(id: Long): User
     fun sellBtc(id: Long, amount: Double): Wallet
+    fun buyBtc(id: Long, amount: Double): Wallet
 }
 
 @Service
@@ -30,11 +34,26 @@ class CryptoFacadeImpl : CryptoFacade {
 
         if (btcAmount >= amount) {
             user.wallet.btc -= amount
-            user.wallet.usd += amount * BTC_PRICE
+            user.wallet.usd += amount * getBtcPrice().bid
             userRepository.save(user)
         } else {
             throw NotEnoughMoneyException("you have not enought bitcoins")
         }
+        return user.wallet
+    }
+
+    override fun buyBtc(id: Long, amount: Double): Wallet {
+        val user = userRepository.getOne(id)
+        val usdAmount = user.wallet.usd
+
+        if (amount * getBtcPrice().ask <= usdAmount) {
+            user.wallet.usd -= amount * getBtcPrice().ask
+            user.wallet.btc += amount
+            userRepository.save(user)
+        } else {
+            throw NotEnoughMoneyException("you have not enough usd")
+        }
+
         return user.wallet
     }
 
@@ -59,7 +78,19 @@ class CryptoFacadeImpl : CryptoFacade {
         return userRepository.findAll()
     }
 
+    fun getBtcPrice(): BtcPrice {
+        val response = RestTemplate()
+                .getForObject(API_GET_BTC_PRICE, BtcPrice::class.java)
+
+        if (response == null) {
+            throw CantFetchBtcPrice()
+        }
+
+        return response
+    }
+
     companion object {
         const val BTC_PRICE = 5000.0
+        const val API_GET_BTC_PRICE = "https://www.bitstamp.net/api/v2/ticker/btcusd/"
     }
 }
