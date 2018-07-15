@@ -1,9 +1,9 @@
 package com.slowinski.radoslaw.cryptomarket.controller
 
 import com.slowinski.radoslaw.cryptomarket.CryptoFacade
+import com.slowinski.radoslaw.cryptomarket.model.Credentials
 import com.slowinski.radoslaw.cryptomarket.model.User
 import com.slowinski.radoslaw.cryptomarket.model.Wallet
-import com.slowinski.radoslaw.cryptomarket.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -33,14 +33,38 @@ class CryptoController {
 
     @PostMapping("/user/{id}/sell/btc")
     fun sellBtc(@PathVariable id: Long,
-                @RequestParam("amount") amount: Double): Wallet{
+                @RequestParam("amount") amount: Double): Wallet {
         return cryptoFacade.sellBtc(id, amount)
     }
 
     @PostMapping("/user/{id}/buy/btc")
     fun buyBtc(@PathVariable id: Long,
-               @RequestParam("amount") amount: Double): Wallet{
+               @RequestParam("amount") amount: Double): Wallet {
+
         return cryptoFacade.buyBtc(id, amount)
     }
 
+    @DeleteMapping("/user/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteUser(@PathVariable id: Long) {
+        cryptoFacade.deleteUser(id)
+    }
+
+    @DeleteMapping("/user")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteAllUsers() {
+        cryptoFacade.deleteAllUsers()
+    }
+
+    @PutMapping("/user/{id}")
+    fun updateUserFirstName(@PathVariable id: Long,
+                            @RequestParam("firstName") firstName: String): User {
+        return cryptoFacade.updateFirstName(id, firstName)
+    }
+
+    @PutMapping("/update/user/{id}")
+    fun updateUserCredentials(@PathVariable id: Long,
+                              @RequestBody credentials: Credentials): User{
+        return cryptoFacade.updateUserCredentials(id, credentials)
+    }
 }

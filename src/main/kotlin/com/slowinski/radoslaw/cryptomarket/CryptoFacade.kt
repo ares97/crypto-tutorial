@@ -4,6 +4,7 @@ import com.slowinski.radoslaw.cryptomarket.exceptions.CantFetchBtcPrice
 import com.slowinski.radoslaw.cryptomarket.exceptions.NotEnoughMoneyException
 import com.slowinski.radoslaw.cryptomarket.exceptions.UserNotFoundException
 import com.slowinski.radoslaw.cryptomarket.model.BtcPrice
+import com.slowinski.radoslaw.cryptomarket.model.Credentials
 import com.slowinski.radoslaw.cryptomarket.model.User
 import com.slowinski.radoslaw.cryptomarket.model.Wallet
 import com.slowinski.radoslaw.cryptomarket.repository.UserRepository
@@ -18,6 +19,10 @@ interface CryptoFacade {
     fun getUser(id: Long): User
     fun sellBtc(id: Long, amount: Double): Wallet
     fun buyBtc(id: Long, amount: Double): Wallet
+    fun deleteUser(id: Long)
+    fun deleteAllUsers()
+    fun updateFirstName(id: Long, firstName: String): User
+    fun updateUserCredentials(id: Long, credentials: Credentials): User
 }
 
 @Service
@@ -59,6 +64,17 @@ class CryptoFacadeImpl : CryptoFacade {
         return user.wallet
     }
 
+    override fun deleteAllUsers() {
+        userRepository.deleteAll()
+    }
+
+    override fun updateUserCredentials(id: Long, credentials: Credentials): User {
+        val user = userRepository.getOne(id)
+        val updatedUser = User(user.id, credentials.firstName, credentials.lastName, user.wallet)
+
+        return userRepository.save(updatedUser)
+    }
+
     override fun addUser(firstName: String, lastName: String): User {
         val wallet = Wallet(btc = 5.0, usd = 1250.0)
         walletRepository.save(wallet)
@@ -75,6 +91,16 @@ class CryptoFacadeImpl : CryptoFacade {
                 .orElseThrow { throw UserNotFoundException("can't find user with such id") }
     }
 
+    override fun updateFirstName(id: Long, firstName: String): User {
+        val user = userRepository.getOne(id)
+        val newUser = User(user.id, firstName, user.lastName, user.wallet)
+
+        return userRepository.save(newUser)
+    }
+
+    override fun deleteUser(id: Long) {
+        userRepository.deleteById(id)
+    }
 
     override fun getUsers(): List<User> {
         return userRepository.findAll()
