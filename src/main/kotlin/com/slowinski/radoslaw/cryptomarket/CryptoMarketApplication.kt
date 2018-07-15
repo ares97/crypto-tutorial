@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @SpringBootApplication
-class CryptoMarketApplication
+class   CryptoMarketApplication
 
 fun main(args: Array<String>) {
     runApplication<CryptoMarketApplication>(*args)

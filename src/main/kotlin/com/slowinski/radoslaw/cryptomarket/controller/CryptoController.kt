@@ -30,13 +30,13 @@ class CryptoController {
 
     @PostMapping("/user/{id}/sell/btc")
     fun sellBtc(@PathVariable id: Long,
-                @RequestParam("amount") amount: Double): Wallet {
+                @RequestParam("amount") amount: Double): Wallet{
         return cryptoFacade.sellBtc(id, amount)
     }
 
     @PostMapping("/user/{id}/buy/btc")
     fun buyBtc(@PathVariable id: Long,
-               @RequestParam("amount") amount: Double): Wallet {
+               @RequestParam("amount") amount: Double): Wallet{
         return cryptoFacade.buyBtc(id, amount)
     }
 

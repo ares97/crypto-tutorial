@@ -32,12 +32,13 @@ class CryptoFacadeImpl : CryptoFacade {
         val user = userRepository.getOne(id)
         val btcAmount = user.wallet.btc
 
+        val bidPrice = getBtcPrice().bid
         if (btcAmount >= amount) {
             user.wallet.btc -= amount
-            user.wallet.usd += amount * getBtcPrice().bid
+            user.wallet.usd += amount * bidPrice
             userRepository.save(user)
         } else {
-            throw NotEnoughMoneyException("you have not enought bitcoins")
+            throw NotEnoughMoneyException("you have not enough bitcoins")
         }
         return user.wallet
     }
@@ -46,8 +47,9 @@ class CryptoFacadeImpl : CryptoFacade {
         val user = userRepository.getOne(id)
         val usdAmount = user.wallet.usd
 
-        if (amount * getBtcPrice().ask <= usdAmount) {
-            user.wallet.usd -= amount * getBtcPrice().ask
+        val askPrice = getBtcPrice().ask
+        if (askPrice <= usdAmount) {
+            user.wallet.usd -= amount * askPrice
             user.wallet.btc += amount
             userRepository.save(user)
         } else {
@@ -80,11 +82,7 @@ class CryptoFacadeImpl : CryptoFacade {
 
     fun getBtcPrice(): BtcPrice {
         val response = RestTemplate()
-                .getForObject(API_GET_BTC_PRICE, BtcPrice::class.java)
-
-        if (response == null) {
-            throw CantFetchBtcPrice()
-        }
+                .getForObject(API_GET_BTC_PRICE, BtcPrice::class.java) ?: throw CantFetchBtcPrice()
 
         return response
     }
