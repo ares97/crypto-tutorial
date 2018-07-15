@@ -3,7 +3,9 @@ package com.slowinski.radoslaw.cryptomarket.controller
 import com.slowinski.radoslaw.cryptomarket.CryptoFacade
 import com.slowinski.radoslaw.cryptomarket.model.User
 import com.slowinski.radoslaw.cryptomarket.model.Wallet
+import com.slowinski.radoslaw.cryptomarket.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -18,6 +20,7 @@ class CryptoController {
     }
 
     @PostMapping("/user")
+    @ResponseStatus(HttpStatus.CREATED)
     fun addUser(@RequestParam("firstName") firstName: String,
                 @RequestParam("lastName") lastName: String): User {
         return cryptoFacade.addUser(firstName, lastName)
